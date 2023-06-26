@@ -18,6 +18,9 @@ class _QRBarcodeState extends State<QRBarcode> {
   bool isLoggedIn = false;
   bool snackBarShown = false;
   bool isLoggingIn = false;
+  String qrCodeAPI =
+      'https://absensi.codesantara.com/api/presences'; // URL API untuk mendapatkan kode QR
+  bool isAbsenMasuk = true;
 
   @override
   void dispose() {
@@ -47,40 +50,48 @@ class _QRBarcodeState extends State<QRBarcode> {
           'Bearer ${await DatabaseHelper.instance.getToken() ?? ''}',
     };
     final response = await http.post(
-      Uri.parse('https://absensi.codesantara.com/api/presences'),
+      Uri.parse(qrCodeAPI),
       headers: headers,
-      body: {'barcode': barcode},
+      body: {'barcode_code': barcode},
     );
 
     print(response.body);
+    print(response.statusCode);
     if (response.statusCode == 200) {
-      if (barcode == 'ZXIVCMNS237619DJOP') {
+      if (barcode == response.body) {
         if (mounted) {
           setState(() {
             isLoggedIn = true;
           });
         }
-
+          print(response.body);
+          print(response.statusCode);
         if (!snackBarShown) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Login successful')),
+            const SnackBar(content: Text('Absen Berhasil')),
           );
           snackBarShown = true;
         }
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => NavBarHome(data: '')),
-        );
+        if (isAbsenMasuk) {
+          isAbsenMasuk = false;
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => NavBarHome(data: '')),
+          );
+        }
       } else {
         if (!snackBarShown) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Invalid login code')),
+            const SnackBar(content: Text('Absen Gagal')),
           );
           snackBarShown = true;
         }
       }
     } else {
+      print(response.body);
+      print(response.statusCode);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Failed to perform attendance')),
       );
@@ -94,8 +105,7 @@ class _QRBarcodeState extends State<QRBarcode> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: const Color.fromARGB(
-            255, 17, 45, 78),
+        backgroundColor: const Color.fromARGB(255, 17, 45, 78),
       ),
       body: Column(
         children: [

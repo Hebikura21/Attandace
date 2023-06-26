@@ -178,7 +178,10 @@ class _AttendancePageState extends State<AttendancePage> {
             ),
             actions: <Widget>[
               TextButton(
-                child: const Text('Filter', style: TextStyle(color: Colors.white),),
+                child: const Text(
+                  'Filter',
+                  style: TextStyle(color: Colors.white),
+                ),
                 onPressed: () {
                   setState(() {
                     selectedMonth = newMonth;

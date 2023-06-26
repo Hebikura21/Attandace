@@ -19,6 +19,8 @@ class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
+  bool isLoading = false; // Variabel untuk mengontrol tampilan ikon loading
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -118,16 +120,21 @@ class _LoginPageState extends State<LoginPage> {
                               10.0), // Menentukan radius sudut kotak
                         ),
                       ),
-                      child: const Text("Masuk"),
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          // Perform login
-                          loginApi(
-                            _emailController.text,
-                            _passwordController.text,
-                          );
-                        }
-                      },
+                      child: isLoading // Tampilkan ikon loading jika isLoading bernilai true
+                          ? CircularProgressIndicator() // Ikonya bisa disesuaikan sesuai kebutuhan
+                          : const Text("Masuk"),
+                      onPressed:
+                          isLoading // Tambahkan kondisi untuk membatasi aksi jika isLoading true
+                              ? null
+                              : () {
+                                  if (_formKey.currentState!.validate()) {
+                                    // Perform login
+                                    loginApi(
+                                      _emailController.text,
+                                      _passwordController.text,
+                                    );
+                                  }
+                                },
                     ),
                   ),
                 ],
@@ -140,6 +147,11 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void loginApi(String email, String password) async {
+    // Tambahkan setState untuk mengubah status loading
+    setState(() {
+      isLoading = true;
+    });
+
     final url = Uri.parse('https://absensi.codesantara.com/api/login/user');
     final response = await http.post(
       url,
@@ -148,6 +160,11 @@ class _LoginPageState extends State<LoginPage> {
         'password': password,
       },
     );
+
+    // Hentikan animasi loading setelah menerima respons
+    setState(() {
+      isLoading = false;
+    });
 
     if (response.statusCode == 200) {
       // Login successful
@@ -176,6 +193,4 @@ class _LoginPageState extends State<LoginPage> {
       );
     }
   }
-
- 
 }
